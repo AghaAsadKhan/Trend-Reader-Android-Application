@@ -27,9 +27,17 @@ public class MainActivity extends AppCompatActivity {
             String result= task.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty").get();
             JSONArray jsonArray = new JSONArray(result); // hold all json data
 
-            for(int i=0; i < 50; i++)
+            for(int i=0; i < 30; i++)
             {
-                Log.i("Article Id", jsonArray.getString(i));
+                DownloadTask getArticle= new DownloadTask();
+                String articleInfo = getArticle.execute("https://hacker-news.firebaseio.com/v0/item/"+ jsonArray.getString(i) + ".json?print=pretty").get();
+                JSONObject jsonObject = new JSONObject(articleInfo);
+                String articleTitle = jsonObject.getString("title");
+                String articleUrl = jsonObject.getString("url");
+                Log.i("articleTitle", articleTitle);
+                Log.i("articleUrl", articleUrl);
+
+
             }
 
         } catch (Exception e) {
