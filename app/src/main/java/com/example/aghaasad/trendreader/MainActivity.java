@@ -5,6 +5,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -22,11 +25,14 @@ public class MainActivity extends AppCompatActivity {
         try {
 
             String result= task.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty").get();
-            Log.i("Result", result);
+            JSONArray jsonArray = new JSONArray(result); // hold all json data
 
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+            for(int i=0; i < 50; i++)
+            {
+                Log.i("Article Id", jsonArray.getString(i));
+            }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
