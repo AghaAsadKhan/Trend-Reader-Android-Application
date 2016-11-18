@@ -7,6 +7,8 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -26,11 +29,18 @@ public class MainActivity extends AppCompatActivity {
     Map<Integer,String> articleTitles= new HashMap<Integer,String>();
     ArrayList<Integer> articleIds= new ArrayList<Integer>();
     SQLiteDatabase articlesDB;
+    ArrayList<String> titles= new ArrayList<String>();
+    ArrayAdapter arrayAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ListView listView= (ListView)findViewById(R.id.listView);
+        arrayAdapter=new ArrayAdapter(this,android.R.layout.simple_list_item_1,titles);
+        listView.setAdapter(arrayAdapter);
+
         articlesDB = this.openOrCreateDatabase("Articles", MODE_PRIVATE, null);
         articlesDB.execSQL("CREATE TABLE IF NOT EXISTS articles (id INTEGER PRIMARY KEY, articleId INTEGER, url VARCHAR , title VARCHAR, content VARCHAR)");
 
@@ -39,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
             String result= task.execute("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty").get();
             JSONArray jsonArray = new JSONArray(result); // hold all json data
-
+            articlesDB.execSQL("DELETE FROM articles");// delete previous record because we dont want twice data
             for(int i=0; i < 30; i++)
 
             {
@@ -62,22 +72,25 @@ public class MainActivity extends AppCompatActivity {
 
 
             }
-            Cursor c= articlesDB.rawQuery("SELECT * FROM articles", null);
+            Cursor c= articlesDB.rawQuery("SELECT * FROM articles ORDER BY articleId DESC", null);
 
             int articleIdIndex=  c.getColumnIndex("articleId");
             int urlIndex=  c.getColumnIndex("url");
             int titleIndex=c.getColumnIndex("title");
 
             c.moveToFirst();
+            titles.clear();
+
             while(c != null)
-            {
+            {   titles.add(c.getString(titleIndex));
                 Log.i("articleId", Integer.toString(c.getInt(articleIdIndex)));
                 Log.i("articleurl", c.getString(urlIndex));
                 Log.i("articleTitle", c.getString(titleIndex));
+
                 c.moveToNext();
 
             }
-
+           arrayAdapter.notifyDataSetChanged();
         } catch (Exception e) {
             e.printStackTrace();
         }
